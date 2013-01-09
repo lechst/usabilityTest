@@ -20,6 +20,12 @@ Database = function(){
         req.open('PUT','http://localhost:8080/db/test',true);
         req.send('');
 
+        var jsonObj = '{"_id" : "_design/test", "views" : {"events" : {"map" : "function(doc){ emit(doc._id, [doc.type, doc.pageX, doc.pageY])}"}}}';
+
+        var req = new XMLHttpRequest();
+        req.open('PUT','http://localhost:8080/db/test/_design/test',true);
+        req.send(jsonObj);
+
     };
 
     this.addEvent = function(type,event,eventId){
@@ -30,16 +36,23 @@ Database = function(){
 
     };
 
-    this.showEvent = function(i){
+    this.showEvents = function(eventId){
 
         var req = new XMLHttpRequest();
-        req.open('GET','http://localhost:8080/db/test/events'+i,false);
+        req.open('GET','http://localhost:8080/db/test/_design/test/_view/events',false);
         req.send('');
 
         var jsonResp = req.responseText;
         var resp = JSON.parse(jsonResp);
 
-        var text = resp.type+' '+resp.pageX+' '+resp.pageY;
+        var text = '';
+
+        for(var i=0; i<eventId; i++){
+
+            var newText = resp.rows[i].value[0]+' '+resp.rows[i].value[1]+' '+resp.rows[i].value[2];
+            text += '<p>'+newText+'</p>';
+
+        }
 
         return text;
 

@@ -36,12 +36,8 @@ Controller = function(){
 
             that.view.clearShow();
 
-            for(var i=0; i<that.eventId; i++){
-
-                var text = that.database.showEvent(i+1);
-                that.view.appendShow(text);
-
-            }
+            var text = that.database.showEvents(that.eventId);
+            that.view.appendShow(text);
 
         }
     };
