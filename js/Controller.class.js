@@ -4,6 +4,7 @@ Controller = function(){
     this.database = new Database();
 
     this.eventId = 0;
+    this.eventsArray = [];
 
     this.init = function(){
 
@@ -15,7 +16,8 @@ Controller = function(){
     };
 
     this.bindMouseEvents = function() {
-        this.window.addEventListener('click',this.clickMemo(),false);
+        //this.window.addEventListener('click',this.clickMemo(),false);
+        this.window.addEventListener('click',this.clickMemoMany(),false);
         this.show.addEventListener('click',this.showAll(),false);
     };
 
@@ -24,8 +26,26 @@ Controller = function(){
         return function(e){
             e.preventDefault();
 
-            that.eventId++;
             that.database.addEvent("click",e,that.eventId);
+            that.eventId++;
+        }
+    };
+
+    this.clickMemoMany = function(){
+        var that = this;
+        return function(e){
+            e.preventDefault();
+
+            var n = 3;
+            var date = new Date();
+            var time = date.getTime();
+
+            that.eventsArray[that.eventId % n] = '{"_id":"event'+that.eventId+'","time":"'+time+'","type":"click","pageX":"'+e.pageX+'","pageY":"'+e.pageY+'"}';
+            that.eventId++;
+
+            if(that.eventId % n == 0){
+                that.database.addManyEvents(that.eventsArray);
+            }
         }
     };
 
@@ -36,9 +56,8 @@ Controller = function(){
 
             that.view.clearShow();
 
-            var text = that.database.showEvents(that.eventId);
+            var text = that.database.showEvents();
             that.view.appendShow(text);
-
         }
     };
 

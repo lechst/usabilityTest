@@ -14,7 +14,7 @@ View = function(){
 
     this.appendShow = function(text){
 
-        this.htmlShow.innerHTML += '<p>'+text+'</p>';
+        this.htmlShow.innerHTML += text;
 
     };
 
