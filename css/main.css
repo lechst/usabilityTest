@@ -93,19 +93,77 @@ textarea {
    Author's custom styles
    ========================================================================== */
 
+#mainBox {
+    position: absolute;
+    left: 5%;
+    top: 5%;
+    width: 90%;
+    height: 50%;
+    border: 2px solid black;
+}
 
+#showBox {
+    position: absolute;
+    left: 5%;
+    top: 60%;
+    width: 90%;
+    height: 35%;
+    border: 2px solid black;
+    overflow: scroll;
+}
 
+#textInfo {
+    position: absolute;
+    left: 0%;
+    top: 0%;
+    width: 100%;
+    height: 20%;
+    border-bottom: 1px solid black;
+    overflow: hidden;
+}
 
+#clickBox {
+    position: absolute;
+    left: 0%;
+    top: 25%;
+    width: 100%;
+    height: 30%;
+    border-top: 1px solid black;
+    border-bottom: 1px solid black;
+}
 
+#leftClickBox {
+    position: absolute;
+    left: 10%;
+    top: 10%;
+    width: 35%;
+    height: 80%;
+    border: 1px solid black;
+}
 
+#rightClickBox {
+    position: absolute;
+    left: 55%;
+    top: 10%;
+    width: 35%;
+    height: 80%;
+    border: 1px solid black;
+}
 
+#scrollBox {
+    position: absolute;
+    left: 0%;
+    top: 60%;
+    width: 100%;
+    height: 35%;
+    border-top: 1px solid black;
+    overflow: scroll;
+}
 
-
-
-
-
-
-
+p {
+    padding: 0px;
+    margin: 0px;
+}
 
 
 

@@ -16,31 +16,61 @@ Controller = function(){
     };
 
     this.bindMouseEvents = function() {
-        //this.window.addEventListener('click',this.clickMemo(),false);
-        this.window.addEventListener('click',this.clickMemoMany(),false);
+        for(var event in this.database.eventsLists.mouseEvents){
+            //this.window.addEventListener(event,this.memoEvent(event),false);
+            this.window.addEventListener(event,this.memoManyEvents(event),false);
+        }
         this.show.addEventListener('click',this.showAll(),false);
     };
 
-    this.clickMemo = function(){
+    this.memoEvent = function(event){
         var that = this;
         return function(e){
             e.preventDefault();
 
-            that.database.addEvent("click",e,that.eventId);
+            var jsonEvent = '{';
+
+            for(var i=0; i<that.database.eventsLists.mouseEvents[event].length; i++){
+                if(typeof that.database.eventsLists.mouseEvents[event][i] === 'string'){
+                    jsonEvent += '"'+that.database.eventsLists.mouseEvents[event][i]+'":"'+e[that.database.eventsLists.mouseEvents[event][i]]+'",';
+                }
+                else {
+                    jsonEvent += '"'+that.database.eventsLists.mouseEvents[event][i][0]+'.'+that.database.eventsLists.mouseEvents[event][i][1]+'":"'+e[that.database.eventsLists.mouseEvents[event][i][0]][that.database.eventsLists.mouseEvents[event][i][1]]+'",';
+                }
+            }
+
+            jsonEvent = jsonEvent.substring(0,jsonEvent.length-1);
+            jsonEvent += '}';
+
+            that.database.addEvent(jsonEvent,that.eventId);
             that.eventId++;
         }
     };
 
-    this.clickMemoMany = function(){
+    this.memoManyEvents = function(event){
         var that = this;
         return function(e){
             e.preventDefault();
 
-            var n = 3;
-            var date = new Date();
-            var time = date.getTime();
+            var n = 100;
 
-            that.eventsArray[that.eventId % n] = '{"_id":"event'+that.eventId+'","time":"'+time+'","type":"click","pageX":"'+e.pageX+'","pageY":"'+e.pageY+'"}';
+            var jsonEvent = '{';
+
+            jsonEvent += '"_id":"event'+that.eventId+'",';
+
+            for(var i=0; i<that.database.eventsLists.mouseEvents[event].length; i++){
+                if(typeof that.database.eventsLists.mouseEvents[event][i] === 'string'){
+                    jsonEvent += '"'+that.database.eventsLists.mouseEvents[event][i]+'":"'+e[that.database.eventsLists.mouseEvents[event][i]]+'",';
+                }
+                else {
+                    jsonEvent += '"'+that.database.eventsLists.mouseEvents[event][i][0]+'.'+that.database.eventsLists.mouseEvents[event][i][1]+'":"'+e[that.database.eventsLists.mouseEvents[event][i][0]][that.database.eventsLists.mouseEvents[event][i][1]]+'",';
+                }
+            }
+
+            jsonEvent = jsonEvent.substring(0,jsonEvent.length-1);
+            jsonEvent += '}';
+
+            that.eventsArray[that.eventId % n] = jsonEvent;
             that.eventId++;
 
             if(that.eventId % n == 0){
