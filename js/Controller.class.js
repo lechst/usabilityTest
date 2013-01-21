@@ -3,7 +3,7 @@ Controller = function(){
     this.view = new View();
     this.database = new Database();
 
-    this.eventId = 0;
+    this.eventId = 1000000;
     this.eventsArray = [];
 
     this.init = function(){
@@ -34,6 +34,8 @@ Controller = function(){
 
                 var jsonEvent = '{';
 
+                jsonEvent += '"session":"' + that.database.session + '",';
+
                 for(var i=0; i<that.database.eventsLists[type][event].length; i++){
                     if(typeof that.database.eventsLists[type][event][i] === 'string'){
                         jsonEvent += '"'+that.database.eventsLists[type][event][i]+'":"'+e[that.database.eventsLists[type][event][i]]+'",';
@@ -60,7 +62,8 @@ Controller = function(){
 
                 var jsonEvent = '{';
 
-                jsonEvent += '"_id":"event'+that.eventId+'",';
+                jsonEvent += '"_id":"' + that.database.session + '' + that.eventId + '",';
+                jsonEvent += '"session":"' + that.database.session + '",';
 
                 for(var i=0; i<that.database.eventsLists[type][event].length; i++){
                     if(typeof that.database.eventsLists[type][event][i] === 'string'){

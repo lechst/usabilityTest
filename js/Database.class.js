@@ -1,6 +1,9 @@
 Database = function(){
 
-    var path = 'http://192.168.181.1:8080/db';
+    this.path = 'http://localhost:8080/db';
+    this.application = 'utdb001';
+    this.user = 'name=utdb001&password=1234';
+    this.session = '';
 
     this.eventsLists = {
         "windowEvents": {
@@ -39,36 +42,24 @@ Database = function(){
 
     this.init = function(){
 
-        var req = new XMLHttpRequest();
-        req.open('GET',path+'/_all_dbs',false);
-        req.send('');
+        var date = new Date();
+        var time = date.getTime();
+        var rn = Math.floor((Math.random()*100000)+100000);
 
-        var jsonResp = req.responseText;
-        var resp = JSON.parse(jsonResp);
-        for(var i=0; i<resp.length; i++){
-            if(resp[i]=='events'){
-                var req = new XMLHttpRequest();
-                req.open('DELETE',path+'/events',false);
-                req.send('');
-            }
-        }
+        this.session += time;
+        this.session += rn;
 
         var req = new XMLHttpRequest();
-        req.open('PUT',path+'/events',false);
-        req.send('');
-
-        var jsonObj = '{"_id" : "_design/events", "views" : {"events" : {"map" : "function(doc){ emit(doc.timeStamp, doc)}"}}}';
-
-        var req = new XMLHttpRequest();
-        req.open('PUT',path+'/events/_design/events',false);
-        req.send(jsonObj);
+        req.open('POST', this.path + '/_session', false);
+        req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        req.send(this.user);
 
     };
 
     this.addEvent = function(jsonEvent,eventId){
 
         var req = new XMLHttpRequest();
-        req.open('PUT',path+'/events/event'+eventId,true);
+        req.open('PUT', this.path + '/' + this.application + '/' + this.session + '' + eventId, true);
         req.send(jsonEvent);
 
     };
@@ -86,8 +77,8 @@ Database = function(){
         docsArray += ']';
 
         var req = new XMLHttpRequest();
-        req.open('POST',path+'/events/_bulk_docs',false);
-        req.setRequestHeader('Content-Type','application/json');
+        req.open('POST', this.path + '/' + this.application + '/_bulk_docs', false);
+        req.setRequestHeader('Content-Type', 'application/json');
         req.send('{"docs":' + docsArray + '}');
 
     };
@@ -95,7 +86,7 @@ Database = function(){
     this.showEvents = function(){
 
         var req = new XMLHttpRequest();
-        req.open('GET',path+'/events/_design/events/_view/events',false);
+        req.open('GET', this.path + '/' + this.application + '/_design/' + this.application + '/_view/sessions', false);
         req.send('');
 
         var jsonResp = req.responseText;
