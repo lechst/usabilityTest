@@ -1,33 +1,34 @@
 var http = require('http');
-var fs = require('fs');
+var querystring = require('querystring');
+var util = require('util');
 
-http.createServer(function(req,res){
+var signForm = require('fs').readFileSync('../sign.html');
 
-    var filePath = '..' + req.url;
+http.createServer(function (request, response) {
 
-    if (filePath == '../'){
-        filePath = '../sign.html';
+    if (request.method === "POST") {
+
+        var postData = '';
+
+        request.on('data', function (chunk) {
+
+            postData += chunk;
+
+        }).on('end', function () {
+
+            var postDataObject = querystring.parse(postData);
+            console.log('User ' + postDataObject.user + ' posted:\n', postData);
+            response.end('User ' + postDataObject.user + ' posted:\n' + util.inspect(postDataObject));
+
+        });
+
     }
 
-    fs.exists(filePath, function(exists) {
+    if (request.method === "GET") {
 
-        if (exists) {
-            fs.readFile(filePath, function(error, content) {
-                if (error) {
-                    res.writeHead(500);
-                    res.end();
-                }
-                else {
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(content, 'utf-8');
-                }
-            });
-        }
-        else {
-            res.writeHead(404);
-            res.end();
-        }
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.end(signForm);
 
-    });
+    }
 
 }).listen(8080);
