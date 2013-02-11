@@ -6,6 +6,8 @@ var signForm = require('fs').readFileSync('../sign.html');
 
 http.createServer(function (request, response) {
 
+    //Fulfilling the form
+
     if (request.method === "POST") {
 
         var postData = '';
@@ -17,8 +19,51 @@ http.createServer(function (request, response) {
         }).on('end', function () {
 
             var postDataObject = querystring.parse(postData);
-            console.log('User ' + postDataObject.user + ' posted:\n', postData);
-            response.end('User ' + postDataObject.user + ' posted:\n' + util.inspect(postDataObject));
+
+            if (postDataObject.userUp){
+
+                var options = {
+
+                    hostname: '127.0.0.1',
+                    port: 5984,
+                    path: '/_users',
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                };
+
+                var req = http.request(options,function(res){
+                    var responseBody = "";
+
+                    res.on("data", function(chunk) {
+                        responseBody += chunk;
+                    });
+
+                    res.on("end", function() {
+                        response.writeHead(200, {'Content-Type': 'text/plain'});
+                        response.write(responseBody);
+                        response.end();
+                    });
+                });
+
+                req.write('{"_id":"org.couchdb.user:'+postDataObject.userUp+'", "password":"'+postDataObject.passUp
+                    +'" , "name":"'+postDataObject.userUp+'", "type": "user", "roles":[], "email":"'+postDataObject.emailUp
+                    +'"}');
+                req.end();
+
+                console.log('User ' + postDataObject.userUp + ' created:\n', postData);
+                response.end('User ' + postDataObject.userUp + ' created:\n' + util.inspect(postDataObject));
+
+            } else if (postDataObject.userIn){
+
+                console.log('User ' + postDataObject.userIn + ' posted:\n', postData);
+                response.end('User ' + postDataObject.userIn + ' posted:\n' + util.inspect(postDataObject));
+
+            } else {
+
+                console.log('Something is wrong');
+                response.end('Something is wrong');
+
+            }
 
         });
 
@@ -30,5 +75,97 @@ http.createServer(function (request, response) {
         response.end(signForm);
 
     }
+
+    //Reading database
+
+    /*var options = {
+        hostname: '127.0.0.1',
+        port: 5984,
+        path: '/test/_all_docs'
+    };
+
+    var req = http.get(options, function(res){
+        var responseBody = "";
+
+        res.on("data", function(chunk) {
+            responseBody += chunk;
+        });
+
+        res.on("end", function() {
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write(responseBody);
+            response.end();
+        });
+    });*/
+
+    //Creating database
+
+    /*var options = {
+        hostname: '127.0.0.1',
+        port: 5984,
+        path: '/utdb002',
+        method: 'PUT'
+    };
+
+    var req = http.request(options,function(res){
+        res.on("end", function() {
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write("Creating database finished");
+            response.end();
+        });
+    });
+    req.end();*/
+
+    //Updating the security document
+
+    /*var options = {
+        hostname: '127.0.0.1',
+        port: 5984,
+        path: '/utdb002/_security',
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'}
+    };
+
+    var req = http.request(options,function(res){
+        var responseBody = "";
+
+        res.on("data", function(chunk) {
+            responseBody += chunk;
+        });
+
+        res.on("end", function() {
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write(responseBody);
+            response.end();
+        });
+    });
+    req.write('{"admins":{"names":[],"roles":[]}, "members":{"names":["jan"],"roles":[]}}');
+    req.end();*/
+
+    //Creating the user
+
+    /*var options = {
+        hostname: '127.0.0.1',
+        port: 5984,
+        path: '/_users',
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+    };
+
+    var req = http.request(options,function(res){
+        var responseBody = "";
+
+        res.on("data", function(chunk) {
+            responseBody += chunk;
+        });
+
+        res.on("end", function() {
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write(responseBody);
+            response.end();
+        });
+    });
+    req.write('{"_id":"org.couchdb.user:jan", "password":"123" , "name":"jan", "databases": ["utdb002"], "type": "user", "roles":[]}');
+    req.end();*/
 
 }).listen(8080);
