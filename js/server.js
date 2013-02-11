@@ -55,8 +55,59 @@ http.createServer(function (request, response) {
 
             } else if (postDataObject.userIn){
 
-                console.log('User ' + postDataObject.userIn + ' posted:\n', postData);
-                response.end('User ' + postDataObject.userIn + ' posted:\n' + util.inspect(postDataObject));
+                var options = {
+
+                    hostname: '127.0.0.1',
+                    port: 5984,
+                    path: '/_session',
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                };
+
+                var req = http.request(options,function(res){
+                    var responseBody = "";
+
+                    res.on("data", function(chunk) {
+                        responseBody += chunk;
+                    });
+
+                    res.on("end", function() {
+
+                        var responseBodyObject = JSON.parse(responseBody);
+
+                        if(responseBodyObject.ok) {
+
+                            response.writeHead(200, {'Content-Type': 'text/plain'});
+                            response.write(responseBody);
+                            response.end();
+
+                            console.log('User ' + postDataObject.userIn + ' has successfully signed in!\n');
+
+                        } else if(responseBodyObject.error) {
+
+                            response.writeHead(200, {'Content-Type': 'text/plain'});
+                            response.write(responseBody);
+                            response.end();
+
+                            console.log('User ' + postDataObject.userIn + ' has not signed in!\n');
+
+                        } else {
+
+                            response.writeHead(200, {'Content-Type': 'text/plain'});
+                            response.write('Something is wrong');
+                            response.end();
+
+                            console.log('Something is wrong');
+
+                        }
+
+                    });
+                });
+
+                req.write('{"name":"'+postDataObject.userIn+'", "password":"'+postDataObject.passIn+'"}');
+                req.end();
+
+                console.log('User ' + postDataObject.userIn + ' has posted:\n', postData);
 
             } else {
 
