@@ -235,3 +235,37 @@ http.createServer(function (request, response) {
     req.end();*/
 
 }).listen(8080);
+
+//SENDING EMAILS
+
+var nodemailer = require('nodemailer');
+
+// create reusable transport method (opens pool of SMTP connections)
+var smtpTransport = nodemailer.createTransport("SMTP",{
+    service: "Gmail",
+    auth: {
+        user: "usabilityTest.user13@gmail.com",
+        pass: "John13Doe"
+    }
+});
+
+// setup e-mail data with unicode symbols
+var mailOptions = {
+    from: "John Doe <usabilityTest.user13@gmail.com>", // sender address
+    to: "xab69@o2.pl", // list of receivers
+    subject: "Hello motherfucker!", // Subject line
+    text: "Suck my dick", // plaintext body
+    html: "<b>Suck my dick</b>" // html body
+}
+
+// send mail with defined transport object
+smtpTransport.sendMail(mailOptions, function(error, response){
+    if(error){
+        console.log(error);
+    }else{
+        console.log("Message sent: " + response.message);
+    }
+
+    // if you don't want to use this transport object anymore, uncomment following line
+    smtpTransport.close(); // shut down the connection pool, no more messages
+});
