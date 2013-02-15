@@ -8,6 +8,8 @@ var signForm = fs.readFileSync('../sign.html');
 var logSite = fs.readFileSync('../logged.html');
 var logScript = fs.readFileSync('logged.js');
 
+var user = {};
+
 http.createServer(function (request, response) {
 
     //Fulfilling the form
@@ -23,6 +25,7 @@ http.createServer(function (request, response) {
         }).on('end', function () {
 
             var postDataObject = querystring.parse(postData);
+            user = postDataObject;
 
             if (postDataObject.userUp){
 
@@ -128,6 +131,10 @@ http.createServer(function (request, response) {
         if(path.basename(request.url) == 'logged.js'){
             response.writeHead(200, {'Content-Type': 'application/javascript'});
             response.end(logScript);
+        } else if(path.basename(request.url) == 'getdata'){
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write('User ' + user.userIn + ' has successfully signed in!');
+            response.end();
         } else {
             response.writeHead(200, {'Content-Type': 'text/html'});
             response.end(signForm);
