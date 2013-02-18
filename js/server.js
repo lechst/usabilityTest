@@ -135,6 +135,11 @@ http.createServer(function (request, response) {
             response.writeHead(200, {'Content-Type': 'text/plain'});
             response.write('User ' + user.userIn + ' has successfully signed in!');
             response.end();
+        } else if(path.basename(request.url) == 'activate'){
+            response.writeHead(200, {'Content-Type': 'text/plain'});
+            response.write('Activation');
+            response.end();
+            console.log("Activation");
         } else {
             response.writeHead(200, {'Content-Type': 'text/html'});
             response.end(signForm);
@@ -255,7 +260,7 @@ var mailOptions = {
     to: "xab69@o2.pl", // list of receivers
     subject: "Hello motherfucker!", // Subject line
     text: "Suck my dick", // plaintext body
-    html: "<b>Suck my dick</b>" // html body
+    html: "<b>Suck my dick</b><p>This is your activation link:</p><a href='http://localhost:8080/activate'>Aktywuj konto</a>" // html body
 }
 
 // send mail with defined transport object
