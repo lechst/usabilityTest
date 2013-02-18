@@ -1,8 +1,23 @@
+//Core modules
+
 var http = require('http');
 var querystring = require('querystring');
 var util = require('util');
 var fs = require('fs');
 var path = require('path');
+
+//Non-core modules
+
+var nodemailer = require('nodemailer');
+
+// create reusable transport method (opens pool of SMTP connections)
+var smtpTransport = nodemailer.createTransport("SMTP",{
+    service: "Gmail",
+    auth: {
+        user: "usabilityTest.user13@gmail.com",
+        pass: "John13Doe"
+    }
+});
 
 var signForm = fs.readFileSync('../sign.html');
 var logSite = fs.readFileSync('../logged.html');
@@ -27,38 +42,28 @@ http.createServer(function (request, response) {
             var postDataObject = querystring.parse(postData);
             user = postDataObject;
 
-            if (postDataObject.userUp){
+            if (postDataObject.userUp && postDataObject.passUp && postDataObject.emailUp){
 
-                var options = {
+                var mailOptions = {
+                    from: "John Doe <usabilityTest.user13@gmail.com>",
+                    to: ""+postDataObject.emailUp,
+                    subject: "Signing up to USABILITY TEST",
+                    html: "<b>USABILITY TEST</b><p>This is your activation link:</p><a href='http://localhost:8080/activate'>Activate your account and sign in</a>",
+                    createTextFromHtml: true
+                }
 
-                    hostname: '127.0.0.1',
-                    port: 5984,
-                    path: '/_users',
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'}
-                };
+                smtpTransport.sendMail(mailOptions, function(error, response){
+                    if(error){
+                        console.log(error);
+                    }else{
+                        console.log("Message sent: " + response.message);
+                    }
 
-                var req = http.request(options,function(res){
-                    var responseBody = "";
-
-                    res.on("data", function(chunk) {
-                        responseBody += chunk;
-                    });
-
-                    res.on("end", function() {
-                        response.writeHead(200, {'Content-Type': 'text/plain'});
-                        response.write(responseBody);
-                        response.end();
-                    });
+                    smtpTransport.close();
                 });
 
-                req.write('{"_id":"org.couchdb.user:'+postDataObject.userUp+'", "password":"'+postDataObject.passUp
-                    +'" , "name":"'+postDataObject.userUp+'", "type": "user", "roles":[], "email":"'+postDataObject.emailUp
-                    +'"}');
-                req.end();
-
                 console.log('User ' + postDataObject.userUp + ' created:\n', postData);
-                response.end('User ' + postDataObject.userUp + ' created:\n' + util.inspect(postDataObject));
+                response.end('User ' + postDataObject.userUp + ':\n' + 'Please check your mail-box, activate your account, and sign in.');
 
             } else if (postDataObject.userIn){
 
@@ -71,7 +76,7 @@ http.createServer(function (request, response) {
                     headers: {'Content-Type': 'application/json'}
                 };
 
-                var req = http.request(options,function(res){
+                var req = http.request(options, function(res){
                     var responseBody = "";
 
                     res.on("data", function(chunk) {
@@ -115,6 +120,11 @@ http.createServer(function (request, response) {
 
                 console.log('User ' + postDataObject.userIn + ' has posted:\n', postData);
 
+            } else if (postDataObject.emailIn) {
+
+                console.log('TODO: Password reminder');
+                response.end('TODO: Password reminder');
+
             } else {
 
                 console.log('Something is wrong');
@@ -128,21 +138,57 @@ http.createServer(function (request, response) {
 
     if (request.method === "GET") {
 
-        if(path.basename(request.url) == 'logged.js'){
+        if (path.basename(request.url) == 'logged.js') {
+
             response.writeHead(200, {'Content-Type': 'application/javascript'});
             response.end(logScript);
-        } else if(path.basename(request.url) == 'getdata'){
+
+        } else if (path.basename(request.url) == 'activate') {
+
+            var options = {
+                hostname: '127.0.0.1',
+                port: 5984,
+                path: '/_users',
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            };
+
+            var req = http.request(options, function(res){
+                var responseBody = "";
+
+                res.on("data", function(chunk) {
+                    responseBody += chunk;
+                });
+
+                res.on("end", function() {
+                    response.writeHead(200, {'Content-Type': 'text/plain'});
+                    response.write(responseBody);
+                    response.end();
+                });
+            });
+
+            req.write('{"_id":"org.couchdb.user:'+user.userUp+'", "password":"'+user.passUp
+                +'" , "name":"'+user.userUp+'", "type": "user", "roles":[], "email":"'+user.emailUp
+                +'"}'
+            );
+            req.end();
+
+            console.log('User: '+user.userUp+' has successfully activated account.');
+
+            response.writeHead(200, {'Content-Type': 'text/html'});
+            response.end(signForm);
+
+        } else if (path.basename(request.url) == 'getdata') {
+
             response.writeHead(200, {'Content-Type': 'text/plain'});
             response.write('User ' + user.userIn + ' has successfully signed in!');
             response.end();
-        } else if(path.basename(request.url) == 'activate'){
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.write('Activation');
-            response.end();
-            console.log("Activation");
+
         } else {
+
             response.writeHead(200, {'Content-Type': 'text/html'});
             response.end(signForm);
+
         }
 
     }
@@ -240,37 +286,3 @@ http.createServer(function (request, response) {
     req.end();*/
 
 }).listen(8080);
-
-//SENDING EMAILS
-
-var nodemailer = require('nodemailer');
-
-// create reusable transport method (opens pool of SMTP connections)
-var smtpTransport = nodemailer.createTransport("SMTP",{
-    service: "Gmail",
-    auth: {
-        user: "usabilityTest.user13@gmail.com",
-        pass: "John13Doe"
-    }
-});
-
-// setup e-mail data with unicode symbols
-var mailOptions = {
-    from: "John Doe <usabilityTest.user13@gmail.com>", // sender address
-    to: "xab69@o2.pl", // list of receivers
-    subject: "Hello motherfucker!", // Subject line
-    text: "Suck my dick", // plaintext body
-    html: "<b>Suck my dick</b><p>This is your activation link:</p><a href='http://localhost:8080/activate'>Aktywuj konto</a>" // html body
-}
-
-// send mail with defined transport object
-smtpTransport.sendMail(mailOptions, function(error, response){
-    if(error){
-        console.log(error);
-    }else{
-        console.log("Message sent: " + response.message);
-    }
-
-    // if you don't want to use this transport object anymore, uncomment following line
-    smtpTransport.close(); // shut down the connection pool, no more messages
-});
