@@ -125,6 +125,12 @@ http.createServer(function (request, response) {
                 console.log('TODO: Password reminder');
                 response.end('TODO: Password reminder');
 
+            } else if (path.basename(request.url) == 'logout') {
+
+                console.log('User has logged out!');
+                response.writeHead(200, {'Content-Type': 'text/plain'});
+                response.end('You have logged out. Please visit us later.');
+
             } else {
 
                 console.log('Something is wrong');
@@ -144,6 +150,8 @@ http.createServer(function (request, response) {
             response.end(logScript);
 
         } else if (path.basename(request.url) == 'activate') {
+
+            //Creating user
 
             var options = {
                 hostname: '127.0.0.1',
@@ -171,6 +179,50 @@ http.createServer(function (request, response) {
                 +'" , "name":"'+user.userUp+'", "type": "user", "roles":[], "email":"'+user.emailUp
                 +'"}'
             );
+            req.end();
+
+            //Creating database
+
+            var options = {
+                hostname: '127.0.0.1',
+                port: 5984,
+                path: '/'+user.userUp,
+                method: 'PUT'
+            };
+
+            var req = http.request(options,function(res){
+                res.on("end", function() {
+                    response.writeHead(200, {'Content-Type': 'text/plain'});
+                    response.write("Creating database finished");
+                    response.end();
+                });
+            });
+            req.end();
+
+            //Updating the security document
+
+            var options = {
+                hostname: '127.0.0.1',
+                port: 5984,
+                path: '/'+user.userUp+'/_security',
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'}
+            };
+
+            var req = http.request(options,function(res){
+                var responseBody = "";
+
+                res.on("data", function(chunk) {
+                    responseBody += chunk;
+                });
+
+                res.on("end", function() {
+                    response.writeHead(200, {'Content-Type': 'text/plain'});
+                    response.write(responseBody);
+                    response.end();
+                });
+            });
+            req.write('{"admins":{"names":[],"roles":[]}, "members":{"names":["'+user.userUp+'"],"roles":[]}}');
             req.end();
 
             console.log('User: '+user.userUp+' has successfully activated account.');
@@ -214,75 +266,5 @@ http.createServer(function (request, response) {
             response.end();
         });
     });*/
-
-    //Creating database
-
-    /*var options = {
-        hostname: '127.0.0.1',
-        port: 5984,
-        path: '/utdb002',
-        method: 'PUT'
-    };
-
-    var req = http.request(options,function(res){
-        res.on("end", function() {
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.write("Creating database finished");
-            response.end();
-        });
-    });
-    req.end();*/
-
-    //Updating the security document
-
-    /*var options = {
-        hostname: '127.0.0.1',
-        port: 5984,
-        path: '/utdb002/_security',
-        method: 'PUT',
-        headers: {'Content-Type': 'application/json'}
-    };
-
-    var req = http.request(options,function(res){
-        var responseBody = "";
-
-        res.on("data", function(chunk) {
-            responseBody += chunk;
-        });
-
-        res.on("end", function() {
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.write(responseBody);
-            response.end();
-        });
-    });
-    req.write('{"admins":{"names":[],"roles":[]}, "members":{"names":["jan"],"roles":[]}}');
-    req.end();*/
-
-    //Creating the user
-
-    /*var options = {
-        hostname: '127.0.0.1',
-        port: 5984,
-        path: '/_users',
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'}
-    };
-
-    var req = http.request(options,function(res){
-        var responseBody = "";
-
-        res.on("data", function(chunk) {
-            responseBody += chunk;
-        });
-
-        res.on("end", function() {
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.write(responseBody);
-            response.end();
-        });
-    });
-    req.write('{"_id":"org.couchdb.user:jan", "password":"123" , "name":"jan", "databases": ["utdb002"], "type": "user", "roles":[]}');
-    req.end();*/
 
 }).listen(8080);

@@ -6,7 +6,7 @@ window.onload = function(){
 
     var resp = req.responseText;
 
-    var htmlUserSpace = document.getElementById('userSpace');
-    htmlUserSpace.innerHTML = '<p>' + resp + '</p>';
+    var htmlUserInfo = document.getElementById('userInfo');
+    htmlUserInfo.innerHTML = '<p>' + resp + '</p>';
 
 };
