@@ -7,14 +7,21 @@
 
 <h1 id="mainTitle">USABILITY TEST</h1>
 
-<div id="userSpace">
-    <div id="userInfo" style="border: 1px solid black; margin-top: 2px; margin-bottom: 2px"></div>
-    <form method="post" action="logout">
-        <input type="submit" value="Log Out">
-    </form>
-</div>
+<div id="userInfo" style="border: 1px solid black; margin-top: 2px; margin-bottom: 2px"></div>
 
-<div id="sessions" style="border: 1px solid black; margin-top: 2px; margin-bottom: 2px">Choose session</div>
+<form method="post" action="logout">
+    <input type="submit" value="Log Out">
+</form>
+
+<form id="sessions">
+    Choose session:
+    <select name="session" id="sessionSelect">
+        <option selected="selected"> </option>
+        <option value="Session1">Session1</option>
+        <option value="Session2">Session2</option>
+        <option value="Session3">Session3</option>
+    </select>
+</form>
 
 <div id="events" style="border: 1px solid black; margin-top: 2px; margin-bottom: 2px">Events for the chosen session</div>
 

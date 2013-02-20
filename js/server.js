@@ -40,9 +40,10 @@ http.createServer(function (request, response) {
         }).on('end', function () {
 
             var postDataObject = querystring.parse(postData);
-            user = postDataObject;
 
             if (postDataObject.userUp && postDataObject.passUp && postDataObject.emailUp){
+
+                user = postDataObject;
 
                 var mailOptions = {
                     from: "John Doe <usabilityTest.user13@gmail.com>",
@@ -66,6 +67,8 @@ http.createServer(function (request, response) {
                 response.end('User ' + postDataObject.userUp + ':\n' + 'Please check your mail-box, activate your account, and sign in.');
 
             } else if (postDataObject.userIn){
+
+                user = postDataObject;
 
                 var options = {
 
@@ -130,6 +133,13 @@ http.createServer(function (request, response) {
                 console.log('User has logged out!');
                 response.writeHead(200, {'Content-Type': 'text/plain'});
                 response.end('You have logged out. Please visit us later.');
+
+            } else if (path.basename(request.url) == 'session') {
+
+                console.log('User wants to get session "'+postData+'" from the database "'+user.userIn+'".');
+
+                response.writeHead(200, {'Content-Type': 'text/plain'});
+                response.end('Event 001');
 
             } else {
 
