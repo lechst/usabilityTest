@@ -138,8 +138,33 @@ http.createServer(function (request, response) {
 
                 console.log('User wants to get session "'+postData+'" from the database "'+user.userIn+'".');
 
-                response.writeHead(200, {'Content-Type': 'text/plain'});
-                response.end('Event 001');
+                //Reading database
+
+                var options = {
+                    hostname: '127.0.0.1',
+                    port: 5984,
+                    path: '/'+user.userIn+'/_temp_view',
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'}
+                };
+
+                var req = http.request(options, function(res){
+                    var responseBody = "";
+
+                    res.on("data", function(chunk) {
+                        responseBody += chunk;
+                    });
+
+                    res.on("end", function() {
+                        response.writeHead(200, {'Content-Type': 'text/plain'});
+                        response.write(responseBody);
+                        response.end();
+                    });
+                });
+
+                var x = "'"+postData+"'";
+                req.write('{"map":"function(doc){if(doc.session == '+x+'){emit(doc._id,doc);}}"}');
+                req.end();
 
             } else {
 
@@ -246,6 +271,30 @@ http.createServer(function (request, response) {
             response.write('User ' + user.userIn + ' has successfully signed in!');
             response.end();
 
+        } else if (path.basename(request.url) == 'getsessions') {
+
+            //Reading database
+
+            var options = {
+                hostname: '127.0.0.1',
+                port: 5984,
+                path: '/'+user.userIn+'/sessions'
+            };
+
+            var req = http.get(options, function(res){
+                var responseBody = "";
+
+                res.on("data", function(chunk) {
+                    responseBody += chunk;
+                });
+
+                res.on("end", function() {
+                    response.writeHead(200, {'Content-Type': 'text/plain'});
+                    response.write(responseBody);
+                    response.end();
+                });
+            });
+
         } else {
 
             response.writeHead(200, {'Content-Type': 'text/html'});
@@ -254,27 +303,5 @@ http.createServer(function (request, response) {
         }
 
     }
-
-    //Reading database
-
-    /*var options = {
-        hostname: '127.0.0.1',
-        port: 5984,
-        path: '/test/_all_docs'
-    };
-
-    var req = http.get(options, function(res){
-        var responseBody = "";
-
-        res.on("data", function(chunk) {
-            responseBody += chunk;
-        });
-
-        res.on("end", function() {
-            response.writeHead(200, {'Content-Type': 'text/plain'});
-            response.write(responseBody);
-            response.end();
-        });
-    });*/
 
 }).listen(8080);
